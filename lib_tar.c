@@ -35,7 +35,7 @@ int exists(int tar_fd, char *path) {
 
 /**
  * Checks whether an entry exists in the archive and is a directory.
- *  Last one
+ *  Micha
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  *
@@ -61,7 +61,7 @@ int is_file(int tar_fd, char *path) {
 
 /**
  * Checks whether an entry exists in the archive and is a symlink.
- *  MIcha
+ *  Micha
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  * @return zero if no entry at the given path exists in the archive or the entry is not symlink,
@@ -100,7 +100,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
 
 /**
  * Reads a file at a given path in the archive.
- *  Micha
+ *  Last one
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive to read from.  If the entry is a symlink, it must be resolved to its linked-to entry.
  * @param offset An offset in the file from which to start reading from, zero indicates the start of the file.
