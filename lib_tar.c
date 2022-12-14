@@ -2,7 +2,7 @@
 
 /**
  * Checks whether the archive is valid.
- *
+ * Micha
  * Each non-null header of a valid archive has:
  *  - a magic value of "ustar" and a null,
  *  - a version value of "00" and no null,
@@ -16,12 +16,13 @@
  *         -3 if the archive contains a header with an invalid checksum value
  */
 int check_archive(int tar_fd) {
+
     return 0;
 }
 
 /**
  * Checks whether an entry exists in the archive.
- *
+ *  Nacho
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  *
@@ -34,7 +35,7 @@ int exists(int tar_fd, char *path) {
 
 /**
  * Checks whether an entry exists in the archive and is a directory.
- *
+ *  Last one
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  *
@@ -47,7 +48,7 @@ int is_dir(int tar_fd, char *path) {
 
 /**
  * Checks whether an entry exists in the archive and is a file.
- *
+ *  Nacho
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  *
@@ -60,7 +61,7 @@ int is_file(int tar_fd, char *path) {
 
 /**
  * Checks whether an entry exists in the archive and is a symlink.
- *
+ *  MIcha
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive.
  * @return zero if no entry at the given path exists in the archive or the entry is not symlink,
@@ -74,7 +75,7 @@ int is_symlink(int tar_fd, char *path) {
 /**
  * Lists the entries at a given path in the archive.
  * list() does not recurse into the directories listed at the given path.
- *
+ *  Nacho
  * Example:
  *  dir/          list(..., "dir/", ...) lists "dir/a", "dir/b", "dir/c/" and "dir/e/"
  *   ├── a
@@ -99,7 +100,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
 
 /**
  * Reads a file at a given path in the archive.
- *
+ *  Micha
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.
  * @param path A path to an entry in the archive to read from.  If the entry is a symlink, it must be resolved to its linked-to entry.
  * @param offset An offset in the file from which to start reading from, zero indicates the start of the file.
