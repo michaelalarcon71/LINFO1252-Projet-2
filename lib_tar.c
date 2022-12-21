@@ -21,47 +21,56 @@
  *         -2 if the archive contains a header with an invalid version value,
  *         -3 if the archive contains a header with an invalid checksum value
  */
-int check_archive(int tar_fd) {
+int check_archive(int tar_fd){
 	int count = 0;
 	char* buf = malloc(512);
-	lseek(tar_fd, 0, SEEK_SET);
+	lseek(tar_fd, 0, SEEK_SET);                 //mirar
 	while (read(tar_fd, buf, 512) != 0) {
 		tar_header_t* arch = (tar_header_t*) buf;
-		if (arch->typeflag == '0' || arch->typeflag == '5' || arch->typeflag == '2') {
-			count++;
-			//Test Magic Value
-			char test1[6] = {'u','s','t','a','r','\0'};
-			for (int i=0; i<6; i++) {
-				if (arch->magic[i] != test1[i]) {	
-			    		return -1;
-				}
+		count++;
+		
+		//pruebas para intentar sacar el tamaño
+		char size[512];
+		*size=*arch->name;
+		for (int i = 0; i < 512; i++){
+			printf("%d",size[i]);
+		}
+		
+        printf("Count: %d \n",count);
+		//Test Magic Value
+		char test1[6] = {'u','s','t','a','r','\0'};
+		for (int i=0; i<6; i++) {
+			if (arch->magic[i] != test1[i]) {	
+		    		return -1;
 			}
-			
-			//Test Version Value
-			for (int i=0; i<2; i++) {
-				if (arch->version[i] != '0') {
-					return -2;
-				}
+		}	
+		//Test Version Value
+		for (int i=0; i<2; i++) {
+			if (arch->version[i] != '0') {
+				return -2;
 			}
-			
-			//Test ChkSum Value
-		    	int sumverif = 0;
-		    	for (int i = 0; i < 512; i++) {
-				if (i >= 148 && i < 156) {
-					sumverif += 32; // ASCII 32 = space
-				}
-				else sumverif += (int) *((char*)arch+i);
-		    	}
-			if (TAR_INT(arch->chksum) != sumverif) {
-	    			return -3;
-	    		}
-    		}
+		}	
+		//Test ChkSum Value
+		int sumverif = 0;
+	   	for (int i = 0; i < 512; i++) {
+			if (i >= 148 && i < 156) {
+				sumverif += 32; // ASCII 32 = space
+			}
+			else sumverif += (int) *((char*)arch+i);
+		}
+		if (TAR_INT(arch->chksum) != sumverif) {
+	    		return -3;
+	    	}
     	}
-    	lseek(tar_fd, 0, SEEK_SET);
+
+		
+		
+
+    	lseek(tar_fd,0, SEEK_CUR);
     	free(buf);
     	if (count == 0) {
     		return -1;
-    	}
+		}
 	return count;
 }
 
@@ -90,7 +99,7 @@ int exists(int tar_fd, char *path) {
 	}
 	free(buf);
 	return 0;
-    }
+}
 
 
 /**
@@ -222,6 +231,6 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  */
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) {
 
-    return 0;
+    return 1;
 }
 
