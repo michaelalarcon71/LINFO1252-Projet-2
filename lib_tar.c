@@ -5,7 +5,9 @@
 #include "lib_tar.h"
 #include <string.h>
 #include <math.h>
-//Funciona solo que con las carpetas se raya
+/*
+This function only counts the number of file inside the tar, avoiding links and folders.
+*/
 /**
  * Checks whether the archive is valid.
  *
@@ -29,42 +31,44 @@ int check_archive(int tar_fd){
 		
 		//Accedemos al bufferfer
 		tar_header_t* arch = (tar_header_t*)buffer;
-		//Sacamos el tamaño del archivo
-		int tam = TAR_INT(arch->size);
-		//printf("Tam: %d \n", tam);
-		if(tam==0){break;}
-		//Calculamos el salto -> falta lo del decimal
-		int n_saltos = (tam/512)+1;
-		//printf("N_saltos: %d \n", n_saltos);
-		//Hacemos comprobaciones V
+		if(arch->typeflag!='5' && arch->typeflag!='1' ){
+			//Sacamos el tamaño del archivo
+			int tam = TAR_INT(arch->size);
+			//printf("Tam: %d \n", tam);
+			if(tam==0){break;}
+			//Calculamos el salto -> falta lo del decimal
+			int n_saltos = (tam/512)+1;
+			//printf("N_saltos: %d \n", n_saltos);
+			//Hacemos comprobaciones V
 
-		//Test Version Value
-		for (int i=0; i<2; i++) {
-			if (arch->version[i] != '0') {
-				return -2;
+			//Test Version Value
+			for (int i=0; i<2; i++) {
+				if (arch->version[i] != '0') {
+					return -2;
+				}
 			}
-		}
-		//Test Magic Value
-		char test1[6] = {'u','s','t','a','r','\0'};
-		for (int i=0; i<6; i++) {
-			if (arch->magic[i] != test1[i]) {	
-		    		return -1;
+			//Test Magic Value
+			char test1[6] = {'u','s','t','a','r','\0'};
+			for (int i=0; i<6; i++) {
+				if (arch->magic[i] != test1[i]) {	
+		    			return -1;
+				}
+			}			
+			//Test ChkSum Value
+			int sumverif = 0;
+	   		for (int i = 0; i < 512; i++) {
+				if (i >= 148 && i < 156) {
+					sumverif += 32; // ASCII 32 = space
+				}
+				else sumverif += (int) *((char*)arch+i);
 			}
+			if (TAR_INT(arch->chksum) != sumverif) {
+	    			return -3;
+	    		}
+			// Volvemos al principio
+			lseek(tar_fd,n_saltos*512, SEEK_CUR);
+			counter ++;
 		}		
-		//Test ChkSum Value
-		int sumverif = 0;
-	   	for (int i = 0; i < 512; i++) {
-			if (i >= 148 && i < 156) {
-				sumverif += 32; // ASCII 32 = space
-			}
-			else sumverif += (int) *((char*)arch+i);
-		}
-		if (TAR_INT(arch->chksum) != sumverif) {
-	    		return -3;
-	    	}
-		// Volvemos al principio
-		lseek(tar_fd,n_saltos*512, SEEK_CUR);
-		counter ++;
     }
 
     	free(buffer);
