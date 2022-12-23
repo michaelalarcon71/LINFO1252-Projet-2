@@ -22,13 +22,13 @@
  *         -3 if the archive contains a header with an invalid checksum value
  */
 int check_archive(int tar_fd){
-	int count = 0;	
-	char* buf = malloc(512);
+	int counter = 0;	
+	char* buffer = malloc(512);
 	lseek(tar_fd, 0, SEEK_SET);                 
-	while (read(tar_fd, buf, 512) != 0) {
+	while (read(tar_fd, buffer, 512) != 0) {
 		
-		//Accedemos al buffer
-		tar_header_t* arch = (tar_header_t*)buf;
+		//Accedemos al bufferfer
+		tar_header_t* arch = (tar_header_t*)buffer;
 		//Sacamos el tamaño del archivo
 		int tam = TAR_INT(arch->size);
 		//printf("Tam: %d \n", tam);
@@ -37,19 +37,20 @@ int check_archive(int tar_fd){
 		int n_saltos = (tam/512)+1;
 		//printf("N_saltos: %d \n", n_saltos);
 		//Hacemos comprobaciones V
+
+		//Test Version Value
+		for (int i=0; i<2; i++) {
+			if (arch->version[i] != '0') {
+				return -2;
+			}
+		}
 		//Test Magic Value
 		char test1[6] = {'u','s','t','a','r','\0'};
 		for (int i=0; i<6; i++) {
 			if (arch->magic[i] != test1[i]) {	
 		    		return -1;
 			}
-		}	
-		//Test Version Value
-		for (int i=0; i<2; i++) {
-			if (arch->version[i] != '0') {
-				return -2;
-			}
-		}	
+		}		
 		//Test ChkSum Value
 		int sumverif = 0;
 	   	for (int i = 0; i < 512; i++) {
@@ -63,12 +64,12 @@ int check_archive(int tar_fd){
 	    	}
 		// Volvemos al principio
 		lseek(tar_fd,n_saltos*512, SEEK_CUR);
-		count ++;
+		counter ++;
     }
 
-    	free(buf);
+    	free(buffer);
 
-	return count;
+	return counter;
 }
 
 /**
@@ -82,19 +83,19 @@ int check_archive(int tar_fd){
  */
 int exists(int tar_fd, char *path) {
 	if (check_archive(tar_fd) < 0) {
-		printf("CheckArchive Failed\n");
+		printf("Check Archive Failed\n");
 		return 0;
 	} 
 	
-	lseek(tar_fd, 0, SEEK_SET); //Reset la tete de lecture
-	
-	char* buf = malloc(512);
-	while (read(tar_fd, buf, 512) != 0){
-		if (strcmp(path, buf) == 0) {
+
+	lseek(tar_fd, 0, SEEK_SET); //We will reset the head pointer every time we call check_archive
+	char* buffer = malloc(512);
+	while (read(tar_fd, buffer, 512) != 0){
+		if (strcmp(path, buffer) == 0) {
 			return 1;
 		}
 	}
-	free(buf);
+	free(buffer);
 	return 0;
 }
 
@@ -110,22 +111,21 @@ int exists(int tar_fd, char *path) {
  */
 int is_dir(int tar_fd, char *path) {
 	if (check_archive(tar_fd) < 0) {
-		printf("CheckArchive Failed\n");
+		printf("Check Archive Failed\n");
 		return 0;
 	}
 	
-	lseek(tar_fd, 0, SEEK_SET); //Reset la tete de lecture
-
-	char* buf = malloc(512);
-	while (read(tar_fd, buf, 512) != 0){
-		tar_header_t* arch = (tar_header_t*) buf;
-		if (strcmp(path, buf) == 0) {
+	lseek(tar_fd, 0, SEEK_SET); 
+	char* buffer = malloc(512);
+	while (read(tar_fd, buffer, 512) != 0){
+		tar_header_t* arch = (tar_header_t*) buffer;
+		if (strcmp(path, buffer) == 0) {
 			if (arch->typeflag == '5'){
 				return 1;
 			}
 		}
 	}
-	free(buf);
+	free(buffer);
 	return 0;   
 }
 
@@ -140,22 +140,21 @@ int is_dir(int tar_fd, char *path) {
  */
 int is_file(int tar_fd, char *path) {
 	if (check_archive(tar_fd) < 0) {
-		printf("CheckArchive Failed\n");
+		printf("Check Archive Failed\n");
 		return 0;
 	} 
 
-	lseek(tar_fd, 0, SEEK_SET); //Reset la tete de lecture
-
-	char* buf = malloc(512);
-	while (read(tar_fd, buf, 512) != 0){
-		tar_header_t* arch = (tar_header_t*) buf;
-		if (strcmp(path, buf) == 0) {
+	lseek(tar_fd, 0, SEEK_SET); 
+	char* buffer = malloc(512);
+	while (read(tar_fd, buffer, 512) != 0){
+		tar_header_t* arch = (tar_header_t*) buffer;
+		if (strcmp(path, buffer) == 0) {
 			if (arch->typeflag == '0'){
 				return 1;
 			}
 		}
 	}
-	free(buf);
+	free(buffer);
 	return 0;   
 }
  
@@ -170,16 +169,15 @@ int is_file(int tar_fd, char *path) {
  */
 int is_symlink(int tar_fd, char *path) {
     if (check_archive(tar_fd) < 0) {
-		printf("CheckArchive Failed\n");
+		printf("Check Archive Failed\n");
 		return 0;
 	}
 	
-	lseek(tar_fd, 0, SEEK_SET); //Reset la tete de lecture
-
-	char* buf = malloc(512);
-	while (read(tar_fd, buf, 512) != 0){
-		tar_header_t* arch = (tar_header_t*) buf;
-		if (strcmp(path, buf) == 0) {
+	lseek(tar_fd, 0, SEEK_SET);
+	char* buffer = malloc(512);
+	while (read(tar_fd, buffer, 512) != 0){
+		tar_header_t* arch = (tar_header_t*) buffer;
+		if (strcmp(path, buffer) == 0) {
 			printf("%s\n", arch->linkname);
 			if (strcmp(arch->linkname,""))
 				return 1;
@@ -187,7 +185,7 @@ int is_symlink(int tar_fd, char *path) {
 				return 0;
 		}
 	}
-	free(buf);
+	free(buffer);
 	return 0; 
 }
 
@@ -216,14 +214,14 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  * @param tar_fd A file descriptor pointing to the start of a tar archive file.
  * @param path A path to an entry in the archive to read from.  If the entry is a symlink, it must be resolved to its linked-to entry.
  * @param offset An offset in the file from which to start reading from, zero indicates the start of the file.
- * @param dest A destination buffer to read the given file into.
+ * @param dest A destination bufferfer to read the given file into.
  * @param len An in-out argument.
  *            The caller set it to the size of dest.
  *            The callee set it to the number of bytes written to dest.
  *
  * @return -1 if no entry at the given path exists in the archive or the entry is not a file,
  *         -2 if the offset is outside the file total length,
- *         zero if the file was read in its entirety into the destination buffer,
+ *         zero if the file was read in its entirety into the destination bufferfer,
  *         a positive value if the file was partially read, representing the remaining bytes left to be read.
  *
  */
