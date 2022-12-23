@@ -208,6 +208,10 @@ int is_symlink(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
+	if (check_archive(tar_fd) < 0) {
+		printf("Check Archive Failed\n");
+		return 0;
+	}
     return 0;
 }
 
@@ -276,18 +280,9 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
 
 			}
 		}
-		if( strcpy(arch->linkname, "")){
-			for(int i = sizeof(var) - 1; var[i] != '/' && i >= 0; i--){
-				strcpy(new,var);
-				strcat(new, arch->linkname);
-				strcpy(var,new);
-
-				lseek(tar_fd,0,SEEK_SET);
-				continue;
-			}
-		}
 		*len = 0;
 		return -1;
+		
 	}
 	*len = 0;
 	return -1;
