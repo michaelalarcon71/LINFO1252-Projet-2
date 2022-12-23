@@ -226,7 +226,66 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  *
  */
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) {
+	if (check_archive(tar_fd) < 0) {
+		printf("Check Archive Failed\n");
+		return 0;
+	}
+    
+	int data;
+	int res;
 
-    return 1;
+	char buffer[512];
+	char* t;
+	char var[32];
+	char new[32];
+
+	strcpy(var,path);
+	lseek(tar_fd,0,SEEK_SET);
+
+	while (read(tar_fd, buffer, 512) != 0){
+		tar_header_t* arch = (tar_header_t*) buffer;
+		int fsize = strtol(arch->size,NULL,8);
+
+		if (strcmp(var, buffer) == 0) {
+			if(arch->typeflag == "0"){
+				if (offset < 0 || offset > fsize){
+					*len = 0;
+					return -2;
+				}
+				if (*len + offset > fsize){
+					*len = fsize - offset;
+				}
+
+				t = malloc(*len);
+				data = read(tar_fd,t,offset);
+				free(t);
+
+				t = malloc(*len);
+				data = read(tar_fd,t,*len);
+				memcpy(dest,t,data);
+				free(t);
+
+				res = fsize - data - offset;
+				*len = data;
+				return res;
+
+
+			}
+		}
+		if( strcpy(arch->linkname, "")){
+			for(int i = sizeof(var) - 1; var[i] != '/' && i >= 0; i--){
+				strcpy(new,var);
+				strcat(new, arch->linkname);
+				strcpy(var,new);
+
+				lseek(tar_fd,0,SEEK_SET);
+				continue;
+			}
+		}
+		*len = 0;
+		return -1;
+	}
+	*len = 0;
+	return -1;
 }
 
