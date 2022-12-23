@@ -5,7 +5,7 @@
 #include "lib_tar.h"
 #include <string.h>
 #include <math.h>
-
+//Funciona solo que con las carpetas se raya
 /**
  * Checks whether the archive is valid.
  *
@@ -22,21 +22,21 @@
  *         -3 if the archive contains a header with an invalid checksum value
  */
 int check_archive(int tar_fd){
-	int count = 0;
+	int count = 0;	
 	char* buf = malloc(512);
-	lseek(tar_fd, 0, SEEK_SET);                 //mirar
+	lseek(tar_fd, 0, SEEK_SET);                 
 	while (read(tar_fd, buf, 512) != 0) {
-		tar_header_t* arch = (tar_header_t*) buf;
-		count++;
 		
-		//pruebas para intentar sacar el tamaño
-		char size[512];
-		*size=*arch->name;
-		for (int i = 0; i < 512; i++){
-			printf("%d",size[i]);
-		}
-		
-        printf("Count: %d \n",count);
+		//Accedemos al buffer
+		tar_header_t* arch = (tar_header_t*)buf;
+		//Sacamos el tamaño del archivo
+		int tam = TAR_INT(arch->size);
+		//printf("Tam: %d \n", tam);
+		if(tam==0){break;}
+		//Calculamos el salto -> falta lo del decimal
+		int n_saltos = (tam/512)+1;
+		//printf("N_saltos: %d \n", n_saltos);
+		//Hacemos comprobaciones V
 		//Test Magic Value
 		char test1[6] = {'u','s','t','a','r','\0'};
 		for (int i=0; i<6; i++) {
@@ -61,16 +61,13 @@ int check_archive(int tar_fd){
 		if (TAR_INT(arch->chksum) != sumverif) {
 	    		return -3;
 	    	}
-    	}
+		// Volvemos al principio
+		lseek(tar_fd,n_saltos*512, SEEK_CUR);
+		count ++;
+    }
 
-		
-		
-
-    	lseek(tar_fd,0, SEEK_CUR);
     	free(buf);
-    	if (count == 0) {
-    		return -1;
-		}
+
 	return count;
 }
 
@@ -161,7 +158,8 @@ int is_file(int tar_fd, char *path) {
 	free(buf);
 	return 0;   
 }
-
+ 
+ //no entiendo bien lo que es un link
 /**
  * Checks whether an entry exists in the archive and is a symlink.
  *

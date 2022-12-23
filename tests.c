@@ -35,10 +35,20 @@ int main(int argc, char **argv) {
         perror("open(tar_file)");
         return -1;
     }
-    printf("Fd value: %d \n",fd);
-    
-    int ret = check_archive(fd);
-    printf("check_archive returned %d\n", ret);
+   // modificar para que haga lo de las carpetas
+   
+    int ret_check = check_archive(fd);
+    printf("check_archive returned %d\n", ret_check);
+
+    int ret_exists = exists(fd,"lib_tar.h");
+    printf("exists returned %d\n", ret_exists);
+
+    int ret_dir = is_dir(fd,"lib_tar.c");
+    printf("check_archive returned %d\n", ret_dir);
+
+    int ret_file = is_file(fd,"lib_tar.c");
+    printf("is_file returned %d\n", ret_file);
+
 
     return 0;
 }
