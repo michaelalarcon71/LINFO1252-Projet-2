@@ -247,7 +247,7 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
 		int fsize = strtol(arch->size,NULL,8);
 
 		if (strcmp(var, buffer) == 0) {
-			if(arch->typeflag == "0"){
+			if(arch->typeflag == '0'){
 				if (offset < 0 || offset > fsize){
 					*len = 0;
 					return -2;
